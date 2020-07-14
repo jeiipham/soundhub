@@ -1,30 +1,23 @@
 import React from 'react';
-import { Box, Grid, TextField, Typography, Button, Paper, LinearProgress } from '@material-ui/core';
-import Loading from "./Loading"
-import { sizing } from '@material-ui/system';
-
+import { Grid, TextField, Typography, Button, Paper, LinearProgress } from '@material-ui/core';
+import RiseLoader from "react-spinners/RiseLoader";
+import PropTypes from 'prop-types';
 
 const SC = require('soundcloud');
 const promisify = require('util.promisify');
 const api = require('../services/api')
 
-
-class Scan extends React.Component {
+class Results extends React.Component {
 
   constructor() {
     super();
     this.state = {
       username: null,
       userId: null,
-
-      // loading 
-      processed: 0,
-      numFollowings: null,
-      loadingText: null,
-      imageUrl: null, 
-
-      // results 
       details: [],
+
+      progress: null,
+      numFollowings: null
     };
   }
 
@@ -34,13 +27,10 @@ class Scan extends React.Component {
     this.setState({ username, userId })
     // let test = await api.getFavoritesAsync(userId)
     // console.log(test)
-
-    this.setState({ loading: "Fetching network" })
-    await this.doScan(userId)
-
+    this.doScan(userId)
   }
 
-  // user: username, permalink, full_name, avatar_url
+  // user: username, permalink, full_name
   // track: id
   async doScan(userId) {
     let followings = await api.getFollowingsAsync(userId)
@@ -57,23 +47,16 @@ class Scan extends React.Component {
 
   async handleFollowingAsync(user, trackMap) {
     let favorites = await api.getFavoritesAsync(user.id)
-    this.setState({ 
-      loading: `Processing ${user.permalink}`,
-      imageUrl: user.avatar_url
-     })
-
     for (let item of favorites) {
       if (!('track' in item)) continue;
       let track = item.track;
       if (track.id in trackMap) trackMap[track.id].users.push(user.username)
       else trackMap[track.id] = { track, users: [user.username] };
     }
-
     // all promises fulfilled
-    this.setState({ processed: this.state.processed + 1 })
-    if (this.state.processed === this.state.numFollowings) {
-      await this.sort(trackMap)
-      this.setState({ loading: null })
+    this.setState({ progress: this.state.progress + 1 })
+    if (this.state.progress === this.state.numFollowings) {
+      this.sort(trackMap)
     }
   }
 
@@ -113,9 +96,10 @@ class Scan extends React.Component {
 
   render() {
     return (
+
       <Grid container spacing={2} justify="center">
         <Grid item xs={12}>
-          <Typography variant='h2' align="center">soundhub</Typography>
+          <LinearProgress variant="determinate" value={this.state.progress / this.state.numFollowings * 100} />
         </Grid>
 
         <Grid container item xs={12} justify="center">
@@ -127,17 +111,14 @@ class Scan extends React.Component {
             <Typography>
               username: {this.state.username} <br />
               userId: {this.state.userId} <br />
-              network size: {this.state.numFollowings}
+              progress: {this.state.progress} / {this.state.numFollowings}
             </Typography>
           </Paper>
         </Grid>
 
+        {/* <RiseLoader color="orange" loading={true}></RiseLoader> */}
 
-        {this.state.loading && this.state.numFollowings 
-          && <Loading done={this.state.processed} total={this.state.numFollowings} text={this.state.loading} imageUrl={this.state.imageUrl}/>} 
-
-        
-        {this.state.details && this.state.details.map(item =>
+        {this.state.details.map(item =>
           <Grid container item xs={11} key={item.track.id}>
             <Grid item xs={12} dangerouslySetInnerHTML={item}></Grid>
             <Grid item xs={12}>
@@ -155,4 +136,9 @@ class Scan extends React.Component {
   }
 }
 
-export default Scan;
+
+Scan.PropTypes = {
+  data: PropTypes.array 
+}
+
+export default Results;
