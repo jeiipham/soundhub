@@ -1,7 +1,7 @@
 import React from 'react';
-import { Grid, Typography, LinearProgress, CardMedia } from '@material-ui/core';
-import { makeStyles, withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
+import { withStyles } from '@material-ui/core/styles';
+import { Grid, Typography, LinearProgress, Paper } from '@material-ui/core';
 
 // react styles use camel case
 const style = { position: "fixed", top: "35%", textAlign: "center" };
@@ -68,7 +68,8 @@ class Loading extends React.Component {
         </Grid>
 
         <Grid item>
-            <img src={this.props.imageUrl} />
+          <Paper component="img"
+            src={this.props.imageUrl} />
         </Grid>
 
         <Grid item>

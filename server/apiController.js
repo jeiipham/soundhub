@@ -19,7 +19,7 @@ router.get('/users/:username', async (req, res, next) => {
 router.get('/followings/:userId', async (req, res, next) => {
     try {
         let followings = await apiService.getFollowings(req.params.userId)
-        console.log(followings)
+        console.log("followings", followings.collection.length)
         res.send(followings)
     } catch (error) {
         console.error(error)
@@ -30,7 +30,7 @@ router.get('/followings/:userId', async (req, res, next) => {
 router.get('/favorites/:userId', async (req, res, next) => {
     try { 
         let favorites = await apiService.getFavorites(req.params.userId)
-        console.log(favorites)
+        console.log("favorites", favorites.collection.length)
         res.send(favorites) 
     } catch (error) {
         console.error(error)
