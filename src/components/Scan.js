@@ -1,6 +1,9 @@
 import React from 'react';
 import { withStyles } from '@material-ui/styles';
-import { InputLabel, Grid, Typography, Paper, Select, MenuItem, FormControl } from '@material-ui/core';
+import { InputLabel, Grid, Typography, Paper, Select, MenuItem, FormControl, Button } from '@material-ui/core';
+import { AppBar, Toolbar, IconButton } from '@material-ui/core'
+import { Card, CardMedia, CardContent } from '@material-ui/core';
+import { ArrowBackIos } from '@material-ui/icons'
 import Loading from "./Loading"
 import Results from "./Results"
 const api = require('../services/api')
@@ -14,6 +17,13 @@ const styles = theme => ({
     textAlign: 'center',
     //   color: theme.palette.text.secondary,
   },
+  formControl: {
+    margin: theme.spacing(2),
+    minWidth: 100,
+  },
+  appBarLeft: {
+    marginLeft: 'auto'
+  }
 });
 
 
@@ -24,12 +34,17 @@ class Scan extends React.Component {
     this.state = {
       username: null,
       userId: null,
+      userAvatar: null,
 
       // loading 
       processed: 0,
       numFollowings: null,
       loadingText: null,
       imageUrl: null,
+
+      // performance
+      t0: null,
+      performance: null,
 
       // filters
       trackType: '',
@@ -42,7 +57,6 @@ class Scan extends React.Component {
         { "name": "This Year", "value": 365 },
         { "name": "All Time", "value": 0 },
       ],
-
 
       // results 
       details: [],
@@ -59,17 +73,14 @@ class Scan extends React.Component {
 
   async componentDidMount() {
     this.setDefaults();
-
     let username = this.props.match.params.username
-    let userId = await api.getUserIdAsync(this.props.match.params.username)
-    this.setState({ username, userId })
+    let user = await api.getUserAsync(username)
+    this.setState({ username, userId: user.id, userAvatar: user.avatar_url })
     this.setState({ loading: "Fetching network" })
-    await this.doScan(userId)
-
+    await this.doScan(user.id)
   }
 
   // user: username, permalink, full_name, avatar_url
-  // track: id, full_duration, likes_count, created_at/display_date
   async doScan(userId) {
     let followings = await api.getFollowingsAsync(userId)
     this.setState({ numFollowings: followings.length })
@@ -103,7 +114,7 @@ class Scan extends React.Component {
   }
 
   async generateDetails(trackMap) {
-    let details = Object.values(trackMap)
+    let details = Object.values(trackMap).filter(item => item.users.length > 1)
     details.sort((a, b) => b.users.length - a.users.length)
     this.setState({ details, filteredDetails: details })
     console.log('details', details)
@@ -112,14 +123,12 @@ class Scan extends React.Component {
   onTrackTypeSelect = (event) => {
     let trackType = event.target.value;
     if (trackType == this.state.trackType) return;
-    this.setState({ trackType });
     this.filter(trackType, this.state.timePeriod)
   }
 
   onTimePeriodSelect = (event) => {
     let timePeriod = event.target.value;
     if (timePeriod == this.state.timePeriod) return;
-    this.setState({ timePeriod });
     this.filter(this.state.trackType, timePeriod)
   }
 
@@ -143,65 +152,83 @@ class Scan extends React.Component {
     );
 
     console.log('filteredDetails', filteredDetails)
-    this.setState({ filteredDetails });
+    this.setState({ trackType, timePeriod, filteredDetails });
   }
 
   render() {
     const { classes } = this.props;
-
     return (
       <div className={classes.root}>
+        <AppBar position="sticky">
+          <Toolbar>
+            <IconButton edge="start" color="inherit" aria-label="menu">
+              <ArrowBackIos />
+            </IconButton>
+            <Typography variant="h5" align="center" fontSize={8}>
+              soundhub
+            </Typography>
+            <div className={classes.appBarLeft}>
+              <Grid container>
+                <Grid item><CardMedia component="img" src={this.state.userAvatar} /></Grid>
+                <Grid item>
+                  <CardContent>
+                    <Typography gutterBottom variant="body2" color="textSecondary">
+                      username: {this.state.username} <br />
+                          userId: {this.state.userId} <br />
+                          network size: {this.state.numFollowings}
+                    </Typography>
+                  </CardContent>
+                </Grid>
+              </Grid>
+            </div>
+          </Toolbar>
+        </AppBar>
+
         <Grid container spacing={2} justify="center">
-
-          <Grid item xs={12}>
-            <Typography variant='h2' align="center">soundhub</Typography>
+          <Grid item xs={12} />
+          <Grid container item xs={12} justify="center" >
+            <FormControl className={classes.formControl} variant="outlined" >
+              <InputLabel>Type</InputLabel>
+              <Select
+                value={this.state.trackType}
+                onChange={this.onTrackTypeSelect}
+                label="Type"
+              >
+                {this.state.trackTypeOptions.map(option =>
+                  <MenuItem key={option} value={option}>{option}</MenuItem>
+                )}
+              </Select>
+            </FormControl >
+            <FormControl className={classes.formControl} variant="outlined">
+              <InputLabel>Period</InputLabel>
+              <Select
+                value={this.state.timePeriod}
+                onChange={this.onTimePeriodSelect}
+                label="Period"
+              >
+                {this.state.timePeriodOptions.map(option =>
+                  <MenuItem key={option.value} value={option.value}>{option.name}</MenuItem>
+                )}
+              </Select>
+            </FormControl>
           </Grid>
+        </Grid>
 
-          <Grid item xs={6}>
-            <Paper className={classes.paper}>
-              <Typography>
-                username: {this.state.username} <br />
-                userId: {this.state.userId} <br />
-                network size: {this.state.numFollowings}
-              </Typography>
-            </Paper>
-          </Grid>
+        {/* <Paper>
+            <Typography>
+              performance: 10 seconds <br />
+                    results: {this.state.details.length} <br />
+            </Typography>
+          </Paper> */}
 
-          <Grid item xs={6}>
-            <Paper>
-              <FormControl variant="outlined">
-                <InputLabel>Type</InputLabel>
-                <Select
-                  value={this.state.trackType}
-                  onChange={this.onTrackTypeSelect}
-                  label="Type"
-                >
-                  {this.state.trackTypeOptions.map(option =>
-                    <MenuItem key={option} value={option}>{option}</MenuItem>
-                  )}
-                </Select>
-              </FormControl>
-
-              <FormControl variant="outlined">
-                <InputLabel>Period</InputLabel>
-                <Select
-                  value={this.state.timePeriod}
-                  onChange={this.onTimePeriodSelect}
-                  label="Period"
-                >
-                  {this.state.timePeriodOptions.map(option =>
-                    <MenuItem key={option.value} value={option.value}>{option.name}</MenuItem>
-                  )}
-                </Select>
-              </FormControl>
-            </Paper>
-          </Grid>
-        </Grid >
-
-        {this.state.loading && this.state.numFollowings &&
-          <Loading done={this.state.processed} total={this.state.numFollowings} text={this.state.loading} imageUrl={this.state.imageUrl} />}
-        {this.state.details.length != 0 &&
-          <Results details={this.state.filteredDetails} />}
+        {
+          this.state.loading && this.state.numFollowings &&
+          <Loading done={this.state.processed} total={this.state.numFollowings} text={this.state.loading} imageUrl={this.state.imageUrl} />
+        }
+        {
+          this.state.details.length != 0 &&
+          <Results details={this.state.filteredDetails} />
+        }
 
       </div >
     );

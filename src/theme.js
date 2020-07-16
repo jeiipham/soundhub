@@ -6,6 +6,11 @@ const theme = createMuiTheme({
     primary: orange,
     // secondary: 
   },
+  typography: {
+    // h3: {
+    //   fontFamily: "Roboto"
+    // }
+  }
 });
 
 export default theme; 

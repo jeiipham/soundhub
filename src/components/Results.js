@@ -1,10 +1,8 @@
 import React from 'react';
-import { Grid, Typography, Paper, LinearProgress } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import PropTypes from 'prop-types';
-
+import Track from "./Track"
 const SC = require('soundcloud');
-const promisify = require('util.promisify');
-const api = require('../services/api')
 
 class Results extends React.Component {
 
@@ -30,16 +28,13 @@ class Results extends React.Component {
     // only auto play one song
     let auto_play = false;
     collection = collection.slice(0, limit)
-
     for (let item of collection) {
       const track = item.track
-
       let embed = await SC.oEmbed(track.uri, {
         auto_play: auto_play,
         maxheight: 250,
       })
-
-      // hack but works since states are immutable 
+      // hacky but works since states are immutable 
       this.state.results.push({
         track: track,
         users: item.users,
@@ -47,7 +42,6 @@ class Results extends React.Component {
         __html: embed.html
       })
       this.setState({ details: this.state.results })
-
       auto_play = false;
     }
     console.log(this.state.results)
@@ -57,23 +51,8 @@ class Results extends React.Component {
     return (
       <Grid container spacing={2} justify="center">
         {this.state.results.map((item, idx) =>
-          <Grid container item xs={11} key={item.track.id}>
-            {idx % 2 == 0 && <Grid item xs={8}>
-              <Paper dangerouslySetInnerHTML={item} />
-            </Grid>}
-
-            <Grid item xs={4}>
-              {new Date(item.track.created_at).toLocaleDateString() + " "}
-              {"(" + item.users.length + ") "}
-              {item.users.map(user =>
-                <span key={user}>{user} | </span>
-              )}
-            </Grid>
-
-            {idx % 2 != 0 && <Grid item xs={8}>
-              <Paper dangerouslySetInnerHTML={item} />
-            </Grid>}
-
+          <Grid item xs={11}>
+            <Track key={item.track.id} item={item} idx={idx} />
           </Grid>
         )}
       </Grid>

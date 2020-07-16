@@ -1,7 +1,7 @@
-export async function getUserIdAsync(username) {
+export async function getUserAsync(username) {
     let res = await fetch(`/api/users/${username}`)
     let json = await res.json()
-    return json.id
+    return json
 }
 
 export async function getFollowingsAsync(userId) {

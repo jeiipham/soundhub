@@ -6,6 +6,7 @@ import * as serviceWorker from './serviceWorker';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from '@material-ui/core'
 import theme from './theme'
+import 'typeface-roboto';
 
 ReactDOM.render(
   // <React.StrictMode>
