@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import { Grid, Typography, LinearProgress, Paper } from '@material-ui/core';
+import { Box, Grid, Typography, LinearProgress, Paper } from '@material-ui/core';
 
 // react styles use camel case
-const style = { position: "fixed", top: "35%", textAlign: "center" };
+const style = { textAlign: "center" };
 
 const BorderLinearProgress = withStyles((theme) => ({
   root: {
@@ -49,7 +49,7 @@ class Loading extends React.Component {
   render() {
     return (
       <Grid container direction="column" justify="center" spacing={2} style={style} >
-
+        <Box my={2} />
         {/* <Grid item>
           <Typography variant="overline" align="center">{Math.round(this.percent)}%</Typography>
         </Grid> */}

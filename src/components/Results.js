@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid } from '@material-ui/core';
+import { Box, Typography } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import Track from "./Track"
 const SC = require('soundcloud');
@@ -33,6 +33,7 @@ class Results extends React.Component {
       let embed = await SC.oEmbed(track.uri, {
         auto_play: auto_play,
         maxheight: 250,
+        // color: "#00ffff"
       })
       // hacky but works since states are immutable 
       this.state.results.push({
@@ -49,13 +50,14 @@ class Results extends React.Component {
 
   render() {
     return (
-      <Grid container spacing={2} justify="center">
+      <Box mx={0.5}>
+        <Typography align="left">{`About 1,337 results (24 seconds) `}</Typography>
         {this.state.results.map((item, idx) =>
-          <Grid item xs={11}>
+          <Box my={2}>
             <Track key={item.track.id} item={item} idx={idx} />
-          </Grid>
+          </Box>
         )}
-      </Grid>
+      </Box>
     );
   }
 }

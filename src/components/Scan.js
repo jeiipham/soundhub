@@ -1,51 +1,87 @@
 import React from 'react';
+import clsx from 'clsx';
 import { withStyles } from '@material-ui/styles';
-import { InputLabel, Grid, Typography, Paper, Select, MenuItem, FormControl, Button } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 import { AppBar, Toolbar, IconButton } from '@material-ui/core'
-import { Card, CardMedia, CardContent } from '@material-ui/core';
-import { ArrowBackIos } from '@material-ui/icons'
+import { Hidden, Drawer } from '@material-ui/core'
+import { Menu } from '@material-ui/icons'
+import UserProfileCard from "./UserProfileCard"
 import Loading from "./Loading"
+import Filters from "./Filters"
 import Results from "./Results"
 const api = require('../services/api')
 
+const drawerWidth = 200;
+
 const styles = theme => ({
   root: {
+    display: "flex",
+  },
+  appBar: {
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+  },
+  appBarShift: {
+    [theme.breakpoints.up('sm')]: {
+      width: `calc(100% - ${drawerWidth}px)`,
+      marginLeft: drawerWidth,
+    },
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    // zIndex: theme.zIndex.drawer + 1,
+  },
+  drawer: {
+    [theme.breakpoints.up('sm')]: {
+      width: drawerWidth,
+      flexShrink: 0,
+    },
+  },
+  drawerPaper: {
+    width: drawerWidth,
+  },
+  drawerHeader: theme.mixins.toolbar,
+  content: {
     flexGrow: 1,
+    padding: theme.spacing(3),
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    [theme.breakpoints.up('sm')]: {
+      marginLeft: -drawerWidth,
+    },
   },
-  paper: {
-    padding: theme.spacing(2),
-    textAlign: 'center',
-    //   color: theme.palette.text.secondary,
+  contentShift: {
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    marginLeft: 0,
   },
-  formControl: {
-    margin: theme.spacing(2),
-    minWidth: 100,
-  },
-  appBarLeft: {
-    marginLeft: 'auto'
-  }
 });
-
 
 class Scan extends React.Component {
 
   constructor() {
     super();
     this.state = {
-      username: null,
-      userId: null,
-      userAvatar: null,
-
+      // ui, must be open for mobile to work
+      open: true,
+      // user
+      user: null,
+      userAvatarHd: null,
       // loading 
       processed: 0,
       numFollowings: null,
       loadingText: null,
-      imageUrl: null,
-
+      loadingImage: null,
       // performance
       t0: null,
       performance: null,
-
       // filters
       trackType: '',
       trackTypeOptions: ["All", "Tracks", "Mixes"],
@@ -57,7 +93,6 @@ class Scan extends React.Component {
         { "name": "This Year", "value": 365 },
         { "name": "All Time", "value": 0 },
       ],
-
       // results 
       details: [],
       fitleredDetails: [],
@@ -75,16 +110,19 @@ class Scan extends React.Component {
     this.setDefaults();
     let username = this.props.match.params.username
     let user = await api.getUserAsync(username)
-    this.setState({ username, userId: user.id, userAvatar: user.avatar_url })
+    console.log("user", user);
+    this.setState({
+      user,
+      userAvatarHd: user.avatar_url.replace("-large", "-t500x500")
+    })
     this.setState({ loading: "Fetching network" })
     await this.doScan(user.id)
   }
 
-  // user: username, permalink, full_name, avatar_url
   async doScan(userId) {
     let followings = await api.getFollowingsAsync(userId)
-    this.setState({ numFollowings: followings.length })
     console.log("followings", followings)
+    this.setState({ numFollowings: followings.length })
     // trackId => [users]
     let trackMap = {};
     for (let user of followings) this.handleFollowingAsync(user, trackMap)
@@ -95,17 +133,15 @@ class Scan extends React.Component {
     let favorites = await api.getFavoritesAsync(user.id)
     this.setState({
       loading: `Processing ${user.permalink}`,
-      imageUrl: user.avatar_url
+      loadingImage: user.avatar_url
     })
-
     for (let item of favorites) {
       if (!('track' in item)) continue;
       let track = item.track;
       if (track.id in trackMap) trackMap[track.id].users.push(user.username)
       else trackMap[track.id] = { track, users: [user.username] };
     }
-
-    // all promises fulfilled
+    // all promises resolved
     this.setState({ processed: this.state.processed + 1 })
     if (this.state.processed === this.state.numFollowings) {
       await this.generateDetails(trackMap)
@@ -122,20 +158,19 @@ class Scan extends React.Component {
 
   onTrackTypeSelect = (event) => {
     let trackType = event.target.value;
-    if (trackType == this.state.trackType) return;
+    if (trackType === this.state.trackType) return;
     this.filter(trackType, this.state.timePeriod)
   }
 
   onTimePeriodSelect = (event) => {
     let timePeriod = event.target.value;
-    if (timePeriod == this.state.timePeriod) return;
+    if (timePeriod === this.state.timePeriod) return;
     this.filter(this.state.trackType, timePeriod)
   }
 
   filter(trackType, timePeriod) {
     console.log(trackType, timePeriod)
     let filteredDetails = this.state.details;
-
     // track type filter 
     switch (trackType.toLowerCase()) {
       case 'tracks':
@@ -144,91 +179,73 @@ class Scan extends React.Component {
       case 'mixes':
         filteredDetails = filteredDetails.filter(item => item.track.full_duration > 10 * 60 * 1000);
         break;
+      default: 
+        break
     }
-
     // time period filter 
-    if (timePeriod != 0) filteredDetails = filteredDetails.filter(item =>
+    if (timePeriod !== 0) filteredDetails = filteredDetails.filter(item =>
       new Date().getTime() - new Date(item.track.created_at).getTime() < timePeriod * 24 * 60 * 60 * 1000
     );
-
     console.log('filteredDetails', filteredDetails)
     this.setState({ trackType, timePeriod, filteredDetails });
   }
 
   render() {
     const { classes } = this.props;
+
     return (
       <div className={classes.root}>
-        <AppBar position="sticky">
+
+        {/* appbar */}
+        <AppBar
+          position="fixed"
+          className={clsx(classes.appBar, {
+            [classes.appBarShift]: this.state.open,
+          })}>
           <Toolbar>
-            <IconButton edge="start" color="inherit" aria-label="menu">
-              <ArrowBackIos />
+            <IconButton edge="start" color="inherit" aria-label="user profile"
+              onClick={() => this.setState({ open: !this.state.open })} >
+              <Menu />
             </IconButton>
             <Typography variant="h5" align="center" fontSize={8}>
               soundhub
             </Typography>
-            <div className={classes.appBarLeft}>
-              <Grid container>
-                <Grid item><CardMedia component="img" src={this.state.userAvatar} /></Grid>
-                <Grid item>
-                  <CardContent>
-                    <Typography gutterBottom variant="body2" color="textSecondary">
-                      username: {this.state.username} <br />
-                          userId: {this.state.userId} <br />
-                          network size: {this.state.numFollowings}
-                    </Typography>
-                  </CardContent>
-                </Grid>
-              </Grid>
-            </div>
           </Toolbar>
         </AppBar>
 
-        <Grid container spacing={2} justify="center">
-          <Grid item xs={12} />
-          <Grid container item xs={12} justify="center" >
-            <FormControl className={classes.formControl} variant="outlined" >
-              <InputLabel>Type</InputLabel>
-              <Select
-                value={this.state.trackType}
-                onChange={this.onTrackTypeSelect}
-                label="Type"
-              >
-                {this.state.trackTypeOptions.map(option =>
-                  <MenuItem key={option} value={option}>{option}</MenuItem>
-                )}
-              </Select>
-            </FormControl >
-            <FormControl className={classes.formControl} variant="outlined">
-              <InputLabel>Period</InputLabel>
-              <Select
-                value={this.state.timePeriod}
-                onChange={this.onTimePeriodSelect}
-                label="Period"
-              >
-                {this.state.timePeriodOptions.map(option =>
-                  <MenuItem key={option.value} value={option.value}>{option.name}</MenuItem>
-                )}
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
+        {/* drawer */}
+        <Hidden xsDown implementation="css">
+          <Drawer
+            className={classes.drawer}
+            classes={{ paper: classes.drawer }}
+            variant="persistent"
+            open={this.state.open}
+          >
+            <UserProfileCard
+              username={this.props.match.params.username}
+              user={this.state.user}
+              userAvatarHd={this.state.userAvatarHd} />
+          </Drawer>
+        </Hidden>
 
-        {/* <Paper>
-            <Typography>
-              performance: 10 seconds <br />
-                    results: {this.state.details.length} <br />
-            </Typography>
-          </Paper> */}
-
-        {
-          this.state.loading && this.state.numFollowings &&
-          <Loading done={this.state.processed} total={this.state.numFollowings} text={this.state.loading} imageUrl={this.state.imageUrl} />
-        }
-        {
-          this.state.details.length != 0 &&
-          <Results details={this.state.filteredDetails} />
-        }
+        {/* main content */}
+        <main className={clsx(classes.content, {
+          [classes.contentShift]: this.state.open,
+        })}>
+          <div className={classes.drawerHeader} />
+          <Filters
+            trackType={this.state.trackType}
+            trackTypeOptions={this.state.trackTypeOptions}
+            onTrackTypeSelect={this.onTrackTypeSelect}
+            timePeriod={this.state.timePeriod}
+            timePeriodOptions={this.state.timePeriodOptions}
+            onTimePeriodSelect={this.onTimePeriodSelect}
+          />
+          {this.state.loading && this.state.numFollowings &&
+            <Loading done={this.state.processed} total={this.state.numFollowings} text={this.state.loading} imageUrl={this.state.loadingImage} />}
+          {this.state.details.length !== 0 &&
+            <Results details={this.state.filteredDetails} />}
+        </main>
 
       </div >
     );
