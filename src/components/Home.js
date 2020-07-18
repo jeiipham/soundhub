@@ -19,9 +19,7 @@ class Home extends React.Component {
 
   onClick = (event) => {
     event.preventDefault()
-    const destination = `http://localhost:3000/scan/${this.state.username}`;
-    console.log(destination);
-    window.location.href = destination;
+    this.props.history.push(`/scan/${this.state.username}`);
   }
 
   render() {
