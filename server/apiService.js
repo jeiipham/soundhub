@@ -3,7 +3,7 @@ const promisify = require('util.promisify');
 require('dotenv').config()
 
 const client_id = process.env.CLIENT_ID
-const hostname = process.env.HOSTNAME
+const hostname = process.env.SC_HOSTNAME
 const soundcloud = new SoundCloud({ client_id, hostname });
 
 async function getUser(username) {
