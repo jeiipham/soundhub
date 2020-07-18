@@ -9,7 +9,7 @@ const moment = require('moment');
 
 const styles = theme => ({
   avatar: {
-    backgroundColor: orange[500],
+    // backgroundColor: orange[500],
   },
 });
 
@@ -40,10 +40,11 @@ class Track extends React.Component {
     const { classes, item, idx } = this.props;
     return (
       <div>
-        <Card raised style={{ borderRadius: "5px" }}>
-          <CardActionArea>
+        <Card raised style={{ borderRadius: "10px" }}>
+          <CardActionArea component="div">
             <Grid container>
-              <Grid item xs={8}><CardMedia dangerouslySetInnerHTML={item} /></Grid>
+              {/* make component into iframe */}
+              <Grid item xs={8}><CardMedia component="div" dangerouslySetInnerHTML={item} /></Grid>
               <Grid item xs={4}>
 
                 <CardHeader
@@ -89,7 +90,7 @@ class Track extends React.Component {
 }
 
 Track.propTypes = {
-  item: PropTypes.array,
+  item: PropTypes.object,
   idx: PropTypes.number
 }
 

@@ -2,8 +2,10 @@ import React from 'react';
 import clsx from 'clsx';
 import { withStyles } from '@material-ui/styles';
 import { Typography } from '@material-ui/core';
-import { AppBar, Toolbar, IconButton } from '@material-ui/core'
+import { AppBar, Toolbar, IconButton, Snackbar } from '@material-ui/core'
 import { Hidden, Drawer } from '@material-ui/core'
+import { Alert } from '@material-ui/lab'
+
 import { Menu } from '@material-ui/icons'
 import UserProfileCard from "./UserProfileCard"
 import Loading from "./Loading"
@@ -71,9 +73,13 @@ class Scan extends React.Component {
     this.state = {
       // ui, must be open for mobile to work
       open: true,
+      openToast: false,
+      toastSeverity: "warning",
+      toastMessage: null,
       // user
       user: null,
       userAvatarHd: null,
+      depth: null,
       // loading 
       processed: 0,
       numFollowings: null,
@@ -85,7 +91,7 @@ class Scan extends React.Component {
       // filters
       trackType: '',
       trackTypeOptions: ["All", "Tracks", "Mixes"],
-      timePeriod: '',
+      timePeriod: 0,
       timePeriodOptions: [
         { "name": "Today", "value": 1 },
         { "name": "This Week", "value": 7 },
@@ -95,7 +101,7 @@ class Scan extends React.Component {
       ],
       // results 
       details: [],
-      fitleredDetails: [],
+      filteredDetails: [],
     };
   }
 
@@ -110,12 +116,14 @@ class Scan extends React.Component {
     this.setDefaults();
     let username = this.props.match.params.username
     let user = await api.getUserAsync(username)
+    let depth = new URLSearchParams(window.location.search).get('depth');
     console.log("user", user);
     this.setState({
       user,
-      userAvatarHd: user.avatar_url.replace("-large", "-t500x500")
+      userAvatarHd: user.avatar_url.replace("-large", "-t500x500"),
+      depth,
     })
-    this.setState({ loading: "Fetching network" })
+    this.setState({ loading: true, loadingText: "Fetching network" })
     await this.doScan(user.id)
   }
 
@@ -125,16 +133,20 @@ class Scan extends React.Component {
     this.setState({ numFollowings: followings.length })
     // trackId => [users]
     let trackMap = {};
-    for (let user of followings) this.handleFollowingAsync(user, trackMap)
+    for (let user of followings) {
+      this.handleFollowingAsync(user, trackMap).catch(error => {
+        console.error("error", user.username, error);
+        this.setState({ openToast: true, toastMessage: `Oops! Hiccup processing ${user.username}, retrying...` })
+        this.handleFollowingAsync(user, trackMap).catch(error =>
+          this.setState({ openToast: true, toastSeverity: "error", toastMessage: "Error, please reload" }));
+      });
+    }
     return trackMap;
   }
 
   async handleFollowingAsync(user, trackMap) {
-    let favorites = await api.getFavoritesAsync(user.id)
-    this.setState({
-      loading: `Processing ${user.permalink}`,
-      loadingImage: user.avatar_url
-    })
+    let favorites = await api.getFavoritesAsync(user.id, this.state.depth)
+    this.setState({ loadingText: `Processing ${user.permalink}`, loadingImage: user.avatar_url })
     for (let item of favorites) {
       if (!('track' in item)) continue;
       let track = item.track;
@@ -145,14 +157,14 @@ class Scan extends React.Component {
     this.setState({ processed: this.state.processed + 1 })
     if (this.state.processed === this.state.numFollowings) {
       await this.generateDetails(trackMap)
-      this.setState({ loading: null })
+      this.setState({ loading: false, loadingText: null })
     }
   }
 
   async generateDetails(trackMap) {
     let details = Object.values(trackMap).filter(item => item.users.length > 1)
     details.sort((a, b) => b.users.length - a.users.length)
-    this.setState({ details, filteredDetails: details })
+    this.setState({ details }, () => this.filter(this.state.trackType, this.state.timePeriod));
     console.log('details', details)
   }
 
@@ -170,6 +182,7 @@ class Scan extends React.Component {
 
   filter(trackType, timePeriod) {
     console.log(trackType, timePeriod)
+    this.setState({ loading: true })
     let filteredDetails = this.state.details;
     // track type filter 
     switch (trackType.toLowerCase()) {
@@ -179,8 +192,7 @@ class Scan extends React.Component {
       case 'mixes':
         filteredDetails = filteredDetails.filter(item => item.track.full_duration > 10 * 60 * 1000);
         break;
-      default: 
-        break
+      default: break;
     }
     // time period filter 
     if (timePeriod !== 0) filteredDetails = filteredDetails.filter(item =>
@@ -190,14 +202,32 @@ class Scan extends React.Component {
     this.setState({ trackType, timePeriod, filteredDetails });
   }
 
+  closeToast = () => this.setState({ openToast: false })
+  test = () => { }
+
   render() {
     const { classes } = this.props;
 
     return (
       <div className={classes.root}>
+        <Snackbar open={this.state.openToast}
+          autoHideDuration={4000}
+          onClose={this.closeToast}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        >
+          <Alert
+            // elevation={6}
+            variant="filled"
+            onClose={this.closeToast}
+            severity={this.state.toastSeverity}
+          >
+            {this.state.toastMessage}
+          </Alert>
+        </Snackbar>
 
         {/* appbar */}
         <AppBar
+          onClick={this.test}
           position="fixed"
           className={clsx(classes.appBar, {
             [classes.appBarShift]: this.state.open,
@@ -240,11 +270,12 @@ class Scan extends React.Component {
             timePeriod={this.state.timePeriod}
             timePeriodOptions={this.state.timePeriodOptions}
             onTimePeriodSelect={this.onTimePeriodSelect}
+            disabled={this.state.loading}
           />
-          {this.state.loading && this.state.numFollowings &&
-            <Loading done={this.state.processed} total={this.state.numFollowings} text={this.state.loading} imageUrl={this.state.loadingImage} />}
-          {this.state.details.length !== 0 &&
-            <Results details={this.state.filteredDetails} />}
+          {this.state.loadingText && this.state.numFollowings &&
+            <Loading done={this.state.processed} total={this.state.numFollowings} text={this.state.loadingText} imageUrl={this.state.loadingImage} />}
+          {this.state.filteredDetails.length !== 0 &&
+            <Results details={this.state.filteredDetails} onReady={() => this.setState({ loading: false })} />}
         </main>
 
       </div >

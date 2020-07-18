@@ -13,20 +13,17 @@ async function getUser(username) {
 }
 
 // limit: 200, use offset
-async function getFollowings(userId) {
+async function getFollowings(userId, limit) {
     let result = await soundcloud.get(`/users/${userId}/followings`, {
-        // limit: 20,
-        limit: 200,
-        
+        limit
     })
     return result; 
 }
 
 // limit: 200 
-async function getFavorites(userId) {
+async function getFavorites(userId, limit) {
     let result = await soundcloud.get(`/users/${userId}/likes`, {
-        // limit: 20,
-        limit: 200,
+        limit
     })
     return result; 
 }

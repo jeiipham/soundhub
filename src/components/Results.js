@@ -26,12 +26,11 @@ class Results extends React.Component {
 
   async embed(collection, limit) {
     // only auto play one song
-    let auto_play = false;
     collection = collection.slice(0, limit)
-    for (let item of collection) {
+    for (let [index, item] of collection.entries()) {
       const track = item.track
       let embed = await SC.oEmbed(track.uri, {
-        auto_play: auto_play,
+        auto_play: false,
         maxheight: 250,
         // color: "#00ffff"
       })
@@ -43,18 +42,18 @@ class Results extends React.Component {
         __html: embed.html
       })
       this.setState({ details: this.state.results })
-      auto_play = false;
     }
-    console.log(this.state.results)
+    console.log("results", this.state.results)
+    this.props.onReady();
   }
 
   render() {
     return (
       <Box mx={0.5}>
-        <Typography align="left">{`About 1,337 results (24 seconds) `}</Typography>
+        <Typography align="left">{`About ${this.props.details.length} results (24 seconds) `}</Typography>
         {this.state.results.map((item, idx) =>
-          <Box my={2}>
-            <Track key={item.track.id} item={item} idx={idx} />
+          <Box key={item.track.id} my={2}>
+            <Track item={item} idx={idx} />
           </Box>
         )}
       </Box>
@@ -63,7 +62,8 @@ class Results extends React.Component {
 }
 
 Results.propTypes = {
-  details: PropTypes.array
+  details: PropTypes.array,
+  onReady: PropTypes.func
 }
 
 export default Results;
