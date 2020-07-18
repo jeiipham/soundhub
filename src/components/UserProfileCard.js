@@ -44,7 +44,7 @@ class UserProfileCard extends React.Component {
 }
 
 UserProfileCard.propTypes = {
-  username: PropTypes.string,
+  username: PropTypes.string.isRequired,
   user: PropTypes.object,
   userAvatarHd: PropTypes.string
 }

@@ -15,15 +15,6 @@ const styles = theme => ({
 
 class Track extends React.Component {
 
-  constructor() {
-    super();
-    this.state = {};
-  }
-
-  componentDidMount() {
-    this.setState({ now: moment() })
-  }
-
   timeAgoString(created_at) {
     let time = moment(created_at);
     let periods = ["years", "months", "weeks", "days", "hours", "minutes"]
@@ -90,8 +81,8 @@ class Track extends React.Component {
 }
 
 Track.propTypes = {
-  item: PropTypes.object,
-  idx: PropTypes.number
+  item: PropTypes.object.isRequired,
+  idx: PropTypes.number.isRequired
 }
 
 export default withStyles(styles)(Track);

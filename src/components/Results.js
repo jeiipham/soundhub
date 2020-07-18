@@ -6,12 +6,9 @@ const SC = require('soundcloud');
 
 class Results extends React.Component {
 
-  constructor() {
-    super();
-    this.state = {
+  state = {
       results: []
     };
-  }
 
   componentDidMount() {
     this.embed(this.props.details, 10);
@@ -50,7 +47,7 @@ class Results extends React.Component {
   render() {
     return (
       <Box mx={0.5}>
-        <Typography align="left">{`About ${this.props.details.length} results (24 seconds) `}</Typography>
+        <Typography align="left">{`About ${this.props.details.length} results (${this.props.performance} seconds) `}</Typography>
         {this.state.results.map((item, idx) =>
           <Box key={item.track.id} my={2}>
             <Track item={item} idx={idx} />
@@ -62,8 +59,9 @@ class Results extends React.Component {
 }
 
 Results.propTypes = {
-  details: PropTypes.array,
-  onReady: PropTypes.func
+  details: PropTypes.array.isRequired,
+  onReady: PropTypes.func,
+  performance: PropTypes.number
 }
 
 export default Results;

@@ -21,11 +21,8 @@ const BorderLinearProgress = withStyles((theme) => ({
 
 class Loading extends React.Component {
 
-  constructor() {
-    super();
-    this.state = {
-      logs: ''
-    }
+  state = {
+    logs: ''
   }
 
   componentDidUpdate(prevProps) {
@@ -82,8 +79,8 @@ class Loading extends React.Component {
 }
 
 Loading.propTypes = {
-  done: PropTypes.number,
-  total: PropTypes.number,
+  done: PropTypes.number.isRequired,
+  total: PropTypes.number.isRequired,
   text: PropTypes.string
 }
 

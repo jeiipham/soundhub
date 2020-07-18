@@ -3,15 +3,9 @@ import { Grid, TextField, Typography, Button } from '@material-ui/core';
 
 class Home extends React.Component {
 
-  constructor() {
-    super();
-    this.state = {
-      username: 'phamsandwich'
-    };
-  }
-
-  componentDidMount() {
-  }
+  state = {
+    username: 'phamsandwich'
+  };
 
   onChange = (event) => {
     this.setState({ username: event.target.value })

@@ -68,43 +68,40 @@ const styles = theme => ({
 
 class Scan extends React.Component {
 
-  constructor() {
-    super();
-    this.state = {
-      // ui, must be open for mobile to work
-      open: true,
-      openToast: false,
-      toastSeverity: "warning",
-      toastMessage: null,
-      // user
-      user: null,
-      userAvatarHd: null,
-      depth: null,
-      // loading 
-      processed: 0,
-      numFollowings: null,
-      loadingText: null,
-      loadingImage: null,
-      // performance
-      t0: null,
-      performance: null,
-      // filters
-      disabled: false, 
-      trackType: '',
-      trackTypeOptions: ["All", "Tracks", "Mixes"],
-      timePeriod: 0,
-      timePeriodOptions: [
-        { "name": "Today", "value": 1 },
-        { "name": "This Week", "value": 7 },
-        { "name": "This Month", "value": 30 },
-        { "name": "This Year", "value": 365 },
-        { "name": "All Time", "value": 0 },
-      ],
-      // results 
-      details: null,
-      filteredDetails: null,
-    };
-  }
+  state = {
+    // ui, must be open for mobile to work
+    open: true,
+    openToast: false,
+    toastSeverity: "warning",
+    toastMessage: null,
+    // user
+    user: null,
+    userAvatarHd: null,
+    depth: null,
+    // loading 
+    processed: 0,
+    numFollowings: null,
+    loadingText: null,
+    loadingImage: null,
+    // performance
+    t0: null,
+    performance: null,
+    // filters
+    disabled: false,
+    trackType: '',
+    trackTypeOptions: ["All", "Tracks", "Mixes"],
+    timePeriod: 0,
+    timePeriodOptions: [
+      { "name": "Today", "value": 1 },
+      { "name": "This Week", "value": 7 },
+      { "name": "This Month", "value": 30 },
+      { "name": "This Year", "value": 365 },
+      { "name": "All Time", "value": 0 },
+    ],
+    // results 
+    details: null,
+    filteredDetails: null,
+  };
 
   setDefaults() {
     this.setState({
@@ -128,11 +125,11 @@ class Scan extends React.Component {
     await this.doScan(user.id)
   }
 
+  // trackMap = { trackId: [users] }
   async doScan(userId) {
     let followings = await api.getFollowingsAsync(userId)
     console.log("followings", followings)
-    this.setState({ numFollowings: followings.length })
-    // trackId => [users]
+    this.setState({ numFollowings: followings.length, t0: performance.now() })
     let trackMap = {};
     for (let user of followings) {
       this.handleFollowingAsync(user, trackMap).catch(error => {
@@ -154,11 +151,11 @@ class Scan extends React.Component {
       if (track.id in trackMap) trackMap[track.id].users.push(user.username)
       else trackMap[track.id] = { track, users: [user.username] };
     }
-    // all promises resolved
     this.setState({ processed: this.state.processed + 1 })
+    // all promises resolved
     if (this.state.processed === this.state.numFollowings) {
-      await this.generateDetails(trackMap)
-      this.setState({ loadingText: null })
+      this.setState({ loadingText: null, performance: performance.now() - this.state.t0 });
+      this.generateDetails(trackMap)
     }
   }
 
@@ -276,7 +273,7 @@ class Scan extends React.Component {
           {this.state.loadingText && this.state.numFollowings &&
             <Loading done={this.state.processed} total={this.state.numFollowings} text={this.state.loadingText} imageUrl={this.state.loadingImage} />}
           {this.state.filteredDetails &&
-            <Results details={this.state.filteredDetails} onReady={() => this.setState({ disabled: false })} />}
+            <Results details={this.state.filteredDetails} onReady={() => this.setState({ disabled: false })} performance={this.state.performance} />}
         </main>
 
       </div >
