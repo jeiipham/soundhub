@@ -7,8 +7,8 @@ const SC = require('soundcloud');
 class Results extends React.Component {
 
   state = {
-      results: []
-    };
+    results: []
+  };
 
   componentDidMount() {
     this.embed(this.props.details, 10);
@@ -47,7 +47,9 @@ class Results extends React.Component {
   render() {
     return (
       <Box mx={0.5}>
-        <Typography align="left">{`About ${this.props.details.length} results (${this.props.performance} seconds) `}</Typography>
+        <Typography align="left">
+          {`About ${this.props.details.length} results (${this.props.performance.toFixed(2)} seconds) `}
+        </Typography>
         {this.state.results.map((item, idx) =>
           <Box key={item.track.id} my={2}>
             <Track item={item} idx={idx} />

@@ -154,7 +154,7 @@ class Scan extends React.Component {
     this.setState({ processed: this.state.processed + 1 })
     // all promises resolved
     if (this.state.processed === this.state.numFollowings) {
-      this.setState({ loadingText: null, performance: performance.now() - this.state.t0 });
+      this.setState({ loadingText: null, performance: (performance.now() - this.state.t0) / 1000 });
       this.generateDetails(trackMap)
     }
   }
