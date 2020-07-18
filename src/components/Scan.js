@@ -89,6 +89,7 @@ class Scan extends React.Component {
       t0: null,
       performance: null,
       // filters
+      disabled: false, 
       trackType: '',
       trackTypeOptions: ["All", "Tracks", "Mixes"],
       timePeriod: 0,
@@ -100,8 +101,8 @@ class Scan extends React.Component {
         { "name": "All Time", "value": 0 },
       ],
       // results 
-      details: [],
-      filteredDetails: [],
+      details: null,
+      filteredDetails: null,
     };
   }
 
@@ -123,7 +124,7 @@ class Scan extends React.Component {
       userAvatarHd: user.avatar_url.replace("-large", "-t500x500"),
       depth,
     })
-    this.setState({ loading: true, loadingText: "Fetching network" })
+    this.setState({ disabled: true, loadingText: "Fetching network" })
     await this.doScan(user.id)
   }
 
@@ -157,7 +158,7 @@ class Scan extends React.Component {
     this.setState({ processed: this.state.processed + 1 })
     if (this.state.processed === this.state.numFollowings) {
       await this.generateDetails(trackMap)
-      this.setState({ loading: false, loadingText: null })
+      this.setState({ loadingText: null })
     }
   }
 
@@ -182,7 +183,7 @@ class Scan extends React.Component {
 
   filter(trackType, timePeriod) {
     console.log(trackType, timePeriod)
-    this.setState({ loading: true })
+    this.setState({ disabled: true })
     let filteredDetails = this.state.details;
     // track type filter 
     switch (trackType.toLowerCase()) {
@@ -270,12 +271,12 @@ class Scan extends React.Component {
             timePeriod={this.state.timePeriod}
             timePeriodOptions={this.state.timePeriodOptions}
             onTimePeriodSelect={this.onTimePeriodSelect}
-            disabled={this.state.loading}
+            disabled={this.state.disabled}
           />
           {this.state.loadingText && this.state.numFollowings &&
             <Loading done={this.state.processed} total={this.state.numFollowings} text={this.state.loadingText} imageUrl={this.state.loadingImage} />}
-          {this.state.filteredDetails.length !== 0 &&
-            <Results details={this.state.filteredDetails} onReady={() => this.setState({ loading: false })} />}
+          {this.state.filteredDetails &&
+            <Results details={this.state.filteredDetails} onReady={() => this.setState({ disabled: false })} />}
         </main>
 
       </div >
