@@ -150,7 +150,7 @@ class Home extends React.Component {
 
           </Box>
           <Grid item xs={11}>
-            <Typography>Discover the most commonly liked tracks from the people you follow on SoundCloud</Typography>
+            <Typography>Discover the most common recently liked tracks from the people you follow on SoundCloud</Typography>
           </Grid>
         </Grid>
       </div>

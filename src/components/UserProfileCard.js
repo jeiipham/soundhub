@@ -28,9 +28,6 @@ class UserProfileCard extends React.Component {
               <Typography variant="h6">Username</Typography>
               <Typography gutterBottom>{username}</Typography>
 
-              <Typography variant="h6">ID</Typography>
-              <Typography gutterBottom>{user.id}</Typography>
-
               <Typography variant="h6">Followers</Typography>
               <Typography gutterBottom>{user.followers_count}</Typography>
 

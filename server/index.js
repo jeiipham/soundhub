@@ -6,7 +6,9 @@ const app = express()
 app.set('json spaces', 2)
 
 app.use(cors())
-app.use(morgan("dev"))
+app.use(morgan("common", {
+    skip: (req, res) => req.url.includes('/favorites')
+}))
 app.use(express.json())
 
 app.use('/api', require("./apiController"))
