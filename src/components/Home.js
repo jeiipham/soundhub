@@ -24,7 +24,7 @@ class Home extends React.Component {
   state = {
     username: '',
     anchorEl: null,
-    message: null
+    error: null
   };
 
   onChange = (event) => {
@@ -37,8 +37,8 @@ class Home extends React.Component {
     api.getUserAsync(this.state.username)
       .then(() => this.props.history.push(`/scan/${this.state.username}`))
       .catch(error => {
-        if (error instanceof TypeError) error.message="Could not connect to server";
-        this.setState({ message: error.message });
+        if (error instanceof TypeError) error.message = "Could not connect to server";
+        this.setState({ error: error });
       })
   }
 
@@ -92,18 +92,20 @@ class Home extends React.Component {
             </Paper>
             <Box m={2}></Box>
             <Typography>
-              Don't have an active account? <Link onClick={() => this.onPresetUsername("phamsandwich")}>Click to use mine!</Link>
+              {"Don't have an active account? "}
+              <Link onClick={() => this.onPresetUsername("phamsandwich")}>Click to use mine!</Link>
             </Typography>
           </div>
         </Popover>
 
+        <Box minHeight="20vh"></Box>
         <Grid container
           spacing={1}
           direction="column"
           alignItems="center"
           justify="center"
           alignContent="center"
-          style={{ minHeight: '70vh' }}
+        // style={{ minHeight: '70vh' }}
         >
           {/* logo */}
           <Grid item xs={12}>
@@ -114,7 +116,7 @@ class Home extends React.Component {
           <Grid container item xs={10} justify="center" component="form" onSubmit={this.onClick}>
             <Grid item xs={8}>
               <TextField fullWidth
-                label="Username" variant="outlined"
+                label="username" variant="outlined"
                 value={this.state.username}
                 onChange={this.onChange}
                 InputProps={{
@@ -140,10 +142,15 @@ class Home extends React.Component {
 
           {/* subtext */}
           <Box mb={2}>
-            {this.state.message && <Typography variant="caption" color="error">{this.state.message}</Typography>}
+            {this.state.error &&
+              <Typography variant="caption" color="error">
+                {this.state.error.message + " "}
+                {!(this.state.error instanceof TypeError) && <Link onClick={() => this.onPresetUsername("phamsandwich")}>Click to use mine!</Link>}
+              </Typography>}
+
           </Box>
           <Grid item xs={11}>
-            <Typography>Discover the most commonly liked tracks from the people you follow</Typography>
+            <Typography>Discover the most commonly liked tracks from the people you follow on SoundCloud</Typography>
           </Grid>
         </Grid>
       </div>
