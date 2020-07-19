@@ -1,21 +1,23 @@
 const serverHost = `http://${window.location.hostname}:3001`
 
-export async function getUserAsync(username) {
-    let res = await fetch(`${serverHost}/api/users/${username}`)
-    let json = await res.json()
-    return json
+export function getUserAsync(username) {
+    return fetch(`${serverHost}/api/users/${username}`)
+        .then(res => {
+            if (res.status === 404) throw new Error("Username does not exist")
+            return res.json()
+        })
 }
 
-export async function getFollowingsAsync(userId) {
-    let res = await fetch(`${serverHost}/api/followings/${userId}`)
-    let json = await res.json()
-    return json.collection
+export function getFollowingsAsync(userId) {
+    return fetch(`${serverHost}/api/followings/${userId}`)
+        .then(res => res.json())
+        .then(json => json.collection)
 }
 
-export async function getFavoritesAsync(userId, limit) {
-    let params = new URLSearchParams() 
+export function getFavoritesAsync(userId, limit) {
+    let params = new URLSearchParams()
     if (limit) params.append("limit", limit)
-    let res = await fetch(`${serverHost}/api/favorites/${userId}?${params.toString()}`)
-    let json = await res.json()
-    return json.collection
+    return fetch(`${serverHost}/api/favorites/${userId}?${params.toString()}`)
+        .then(res => res.json())
+        .then(json => json.collection)
 }
