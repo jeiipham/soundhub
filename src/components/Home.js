@@ -116,7 +116,7 @@ class Home extends React.Component {
           <Grid container item xs={8} justify="center" component="form" onSubmit={this.onClick}>
             <Grid item xs={8}>
               <TextField fullWidth
-                label="username" variant="outlined"
+                label="Username" variant="outlined"
                 value={this.state.username}
                 onChange={this.onChange}
                 InputProps={{
