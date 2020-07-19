@@ -72,8 +72,8 @@ class Home extends React.Component {
           onClose={this.onInfoClose}
           anchorEl={this.state.anchorEl}
           anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'left',
+            vertical: 'bottom',
+            horizontal: 'right',
           }}
           transformOrigin={{
             vertical: 'top',
@@ -113,7 +113,7 @@ class Home extends React.Component {
           </Grid>
 
           {/* form */}
-          <Grid container item xs={10} justify="center" component="form" onSubmit={this.onClick}>
+          <Grid container item xs={8} justify="center" component="form" onSubmit={this.onClick}>
             <Grid item xs={8}>
               <TextField fullWidth
                 label="username" variant="outlined"
