@@ -11,3 +11,9 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* custom styles */
+
+.Mui-selected {
+  background-color: goldenrod !important
+}

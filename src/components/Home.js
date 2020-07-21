@@ -21,6 +21,8 @@ const styles = theme => ({
 
 class Home extends React.Component {
 
+  controller = new AbortController();
+
   state = {
     username: '',
     anchorEl: null,
@@ -33,9 +35,10 @@ class Home extends React.Component {
 
   onClick = async (event) => {
     event.preventDefault()
-
-    api.getUserAsync(this.state.username)
-      .then(() => this.props.history.push(`/scan/${this.state.username}`))
+    let username = this.state.username.includes(".com/") ? 
+      this.state.username.split(".com/")[1] : this.state.username;
+    api.getUserAsync(username)
+      .then(() => this.props.history.push(`/scan/${username}`))
       .catch(error => {
         if (error instanceof TypeError) error.message = "Could not connect to server";
         this.setState({ error: error });
@@ -62,8 +65,8 @@ class Home extends React.Component {
       <div className={classes.root} >
         <AppBar position="static" style={{ background: 'transparent', boxShadow: 'none' }}>
           <Toolbar>
-            <Button disabled>About</Button>
-            <Button disabled>Github</Button>
+            {/* <Button disabled>About</Button>
+            <Button disabled>Github</Button> */}
           </Toolbar>
         </AppBar>
 
@@ -87,7 +90,7 @@ class Home extends React.Component {
             <Paper className={classes.padding1} elevation={6} variant="outlined">
               <Typography variant="body2">
                 e.g. soundcloud.com/
-                <Typography component="span" color="primary"><b><u>username</u></b></Typography>
+                <Typography component="span" color="primary"><b>your-username</b></Typography>
               </Typography>
             </Paper>
             <Box m={2}></Box>
@@ -116,7 +119,7 @@ class Home extends React.Component {
           <Grid container item xs={8} justify="center" component="form" onSubmit={this.onClick}>
             <Grid item xs={8}>
               <TextField fullWidth
-                label="Username" variant="outlined"
+                label="Username / Profile URL" variant="outlined"
                 value={this.state.username}
                 onChange={this.onChange}
                 InputProps={{

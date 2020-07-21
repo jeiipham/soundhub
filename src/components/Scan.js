@@ -1,17 +1,17 @@
 import React from 'react';
 import clsx from 'clsx';
 import { withStyles } from '@material-ui/styles';
-import { Typography } from '@material-ui/core';
-import { AppBar, Toolbar, IconButton, Snackbar } from '@material-ui/core'
-import { Hidden, Drawer } from '@material-ui/core'
+import { Snackbar, Hidden } from '@material-ui/core'
 import { Alert } from '@material-ui/lab'
 
-import { Menu } from '@material-ui/icons'
-import UserProfileCard from "./UserProfileCard"
+import ScanAppBar from "./ScanAppBar"
+import ScanDrawer from "./ScanDrawer"
+
 import Loading from "./Loading"
 import Filters from "./Filters"
 import Results from "./Results"
 const api = require('../services/api')
+const moment = require('moment');
 
 const drawerWidth = 200;
 
@@ -68,6 +68,8 @@ const styles = theme => ({
 
 class Scan extends React.Component {
 
+  controller = new AbortController();
+
   state = {
     // ui, must be open for mobile to work
     open: true,
@@ -76,8 +78,7 @@ class Scan extends React.Component {
     toastMessage: null,
     // user
     user: null,
-    userAvatarHd: null,
-    depth: null,
+    depth: 200,
     // loading 
     processed: 0,
     numFollowings: null,
@@ -101,6 +102,7 @@ class Scan extends React.Component {
     // results 
     details: null,
     filteredDetails: null,
+    activityScores: []
   };
 
   setDefaults() {
@@ -114,15 +116,14 @@ class Scan extends React.Component {
     this.setDefaults();
     let username = this.props.match.params.username
     let user = await api.getUserAsync(username)
-    let depth = new URLSearchParams(window.location.search).get('depth');
-    console.log("user", user);
-    this.setState({
-      user,
-      userAvatarHd: user.avatar_url.replace("-large", "-t500x500"),
-      depth,
-    })
-    this.setState({ disabled: true, loadingText: "Fetching network" })
+    let depth = parseInt(new URLSearchParams(window.location.search).get('depth'));
+    if (depth) this.setState({ depth })
+    this.setState({ user, disabled: true, loadingText: "Fetching network" })
     await this.doScan(user.id)
+  }
+
+  async componentWillUnmount() {
+    this.controller.abort()
   }
 
   // trackMap = { trackId: [users] }
@@ -133,25 +134,36 @@ class Scan extends React.Component {
     let trackMap = {};
     for (let user of followings) {
       this.handleFollowingAsync(user, trackMap).catch(error => {
+        if (error.name === 'AbortError') return console.error("Requests aborted");
         console.error("error", user.username, error);
         this.setState({ openToast: true, toastMessage: `Oops! Hiccup processing ${user.username}, retrying...` })
         this.handleFollowingAsync(user, trackMap).catch(error =>
           this.setState({ openToast: true, toastSeverity: "error", toastMessage: "Error, please reload" }));
       });
     }
-    return trackMap;
   }
 
+  // activityScores = [{ permalink, user, activityScore }]
+  // activityScore: theoretical max score = depth (default: 200)
   async handleFollowingAsync(user, trackMap) {
-    let favorites = await api.getFavoritesAsync(user.id, this.state.depth)
+    let favorites = await api.getFavoritesAsync(user.id, this.state.depth, this.controller)
     this.setState({ loadingText: `Processing ${user.permalink}`, loadingImage: user.avatar_url })
+    let activityScore = 0;
     for (let item of favorites) {
       if (!('track' in item)) continue;
+      // trackMap processing 
       let track = item.track;
       if (track.id in trackMap) trackMap[track.id].users.push(user.username)
       else trackMap[track.id] = { track, users: [user.username] };
+      // activityScore processing 
+      let daysAgo = moment().diff(moment(track.created_at), 'day')
+      if (daysAgo <= 365) activityScore += (365 - daysAgo) / 365
     }
-    this.setState({ processed: this.state.processed + 1 })
+    if (activityScore > 0) {
+      let activityScores = this.state.activityScores.concat([{ permalink: user.permalink, user, activityScore }]);
+      this.setState({ activityScores })
+    }
+    this.setState({ processed: this.state.processed + 1, activityScore: this.state.activityScores })
     // all promises resolved
     if (this.state.processed === this.state.numFollowings) {
       this.setState({ loadingText: null, performance: (performance.now() - this.state.t0) / 1000 });
@@ -223,36 +235,25 @@ class Scan extends React.Component {
         </Snackbar>
 
         {/* appbar */}
-        <AppBar
+        <ScanAppBar
+          onMenuClick={() => this.setState({ open: !this.state.open })}
           onClick={this.test}
-          position="fixed"
           className={clsx(classes.appBar, {
             [classes.appBarShift]: this.state.open,
-          })}>
-          <Toolbar>
-            <IconButton edge="start" color="inherit" aria-label="user profile"
-              onClick={() => this.setState({ open: !this.state.open })} >
-              <Menu />
-            </IconButton>
-            <Typography variant="h5" align="center" fontSize={8}>
-              soundhub
-            </Typography>
-          </Toolbar>
-        </AppBar>
+          })} />
 
         {/* drawer */}
         <Hidden xsDown implementation="css">
-          <Drawer
+          <ScanDrawer
             className={classes.drawer}
-            classes={{ paper: classes.drawer }}
-            variant="persistent"
+            classesProp={{ paper: classes.drawerPaper }}
             open={this.state.open}
-          >
-            <UserProfileCard
-              username={this.props.match.params.username}
-              user={this.state.user}
-              userAvatarHd={this.state.userAvatarHd} />
-          </Drawer>
+            username={this.props.match.params.username}
+            user={this.state.user}
+            activityScores={this.state.activityScores}
+            depth={this.state.depth}
+            disabled={this.state.disabled}
+          />
         </Hidden>
 
         {/* main content */}

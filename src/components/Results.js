@@ -25,23 +25,31 @@ class Results extends React.Component {
     // only auto play one song
     collection = collection.slice(0, limit)
     for (let [index, item] of collection.entries()) {
-      const track = item.track
-      let embed = await SC.oEmbed(track.uri, {
-        auto_play: false,
-        maxheight: 250,
-        // color: "#00ffff"
-      })
-      // hacky but works since states are immutable 
-      this.state.results.push({
-        track: track,
-        users: item.users,
-        embed: embed,
-        __html: embed.html
-      })
-      this.setState({ details: this.state.results })
+      try {
+        await this.embedTrack(item)
+      } catch (error) {
+        console.error("error", error, item.track)
+      }
     }
     console.log("results", this.state.results)
     this.props.onReady();
+  }
+
+  async embedTrack(item) {
+    const track = item.track
+    let embed = await SC.oEmbed(track.uri, {
+      auto_play: false,
+      maxheight: 250,
+      // color: "#00ffff"
+    })
+    // hacky but works since states are immutable 
+    this.state.results.push({
+      track: track,
+      users: item.users,
+      embed: embed,
+      __html: embed.html
+    })
+    this.setState({ details: this.state.results })
   }
 
   render() {

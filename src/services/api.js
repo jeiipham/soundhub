@@ -14,10 +14,12 @@ export function getFollowingsAsync(userId) {
         .then(json => json.collection)
 }
 
-export function getFavoritesAsync(userId, limit) {
+export function getFavoritesAsync(userId, limit, abortController) {
     let params = new URLSearchParams()
     if (limit) params.append("limit", limit)
-    return fetch(`${serverHost}/api/favorites/${userId}?${params.toString()}`)
+    return fetch(`${serverHost}/api/favorites/${userId}?${params.toString()}`, {
+        signal: abortController.signal
+    })
         .then(res => res.json())
         .then(json => json.collection)
 }
