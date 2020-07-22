@@ -1,0 +1,16 @@
+version: "2.0"
+services:
+  client:
+    build: 
+      context: .
+      dockerfile: client.Dockerfile
+    image: jeiipham/repo:soundhub-client
+    ports: 
+      - "80:80"
+  server:
+    build: 
+      context: .
+      dockerfile: server.Dockerfile
+    image: jeiipham/repo:soundhub-server
+    ports: 
+      - "3001:3001"

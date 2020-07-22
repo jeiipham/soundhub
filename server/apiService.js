@@ -3,7 +3,7 @@ const promisify = require('util.promisify');
 require('dotenv').config()
 
 const client_id = process.env.CLIENT_ID
-const hostname = process.env.HOSTNAME
+const hostname = process.env.SC_HOSTNAME
 const soundcloud = new SoundCloud({ client_id, hostname });
 
 async function getUser(username) {
@@ -12,14 +12,18 @@ async function getUser(username) {
     return result; 
 }
 
-async function getFollowings(userId) {
-    let result = await soundcloud.get(`/users/${userId}/followings`)
+// limit: 200, use offset
+async function getFollowings(userId, limit) {
+    let result = await soundcloud.get(`/users/${userId}/followings`, {
+        limit
+    })
     return result; 
 }
 
-async function getFavorites(userId) {
+// limit: 200 
+async function getFavorites(userId, limit) {
     let result = await soundcloud.get(`/users/${userId}/likes`, {
-        limit: 20
+        limit
     })
     return result; 
 }
