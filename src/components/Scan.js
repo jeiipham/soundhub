@@ -252,7 +252,7 @@ class Scan extends React.Component {
             user={this.state.user}
             activityScores={this.state.activityScores}
             depth={this.state.depth}
-            disabled={this.state.disabled}
+            disabled={Boolean(this.state.loadingText)}
           />
         </Hidden>
 

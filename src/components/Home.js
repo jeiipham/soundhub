@@ -96,7 +96,7 @@ class Home extends React.Component {
             <Box m={2}></Box>
             <Typography>
               {"Don't have an active account? "}
-              <Link onClick={() => this.onPresetUsername("phamsandwich")}>Click to use mine!</Link>
+              <Link onClick={() => this.onPresetUsername("phamsandwich")}>Click to try mine!</Link>
             </Typography>
           </div>
         </Popover>
@@ -116,8 +116,8 @@ class Home extends React.Component {
           </Grid>
 
           {/* form */}
-          <Grid container item xs={8} justify="center" component="form" onSubmit={this.onClick}>
-            <Grid item xs={8}>
+          <Grid container item sm={8} xs={12} justify="center" component="form" onSubmit={this.onClick}>
+            <Grid item sm={8}>
               <TextField fullWidth
                 label="Username / Profile URL" variant="outlined"
                 value={this.state.username}
@@ -148,7 +148,7 @@ class Home extends React.Component {
             {this.state.error &&
               <Typography variant="caption" color="error">
                 {this.state.error.message + " "}
-                {!(this.state.error instanceof TypeError) && <Link onClick={() => this.onPresetUsername("phamsandwich")}>Click to use mine!</Link>}
+                {!(this.state.error instanceof TypeError) && <Link onClick={() => this.onPresetUsername("phamsandwich")}>Click to try mine!</Link>}
               </Typography>}
 
           </Box>

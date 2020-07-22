@@ -14,6 +14,7 @@ code {
 
 /* custom styles */
 
-.Mui-selected {
+/* selectors use list items... use clsx */
+.MuiListItem-root.Mui-selected {
   background-color: goldenrod !important
 }

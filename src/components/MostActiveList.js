@@ -63,7 +63,7 @@ class MostActiveList extends React.Component {
               variant="h6"
               onClick={() => console.log("Activity", this.props.activityScores)}
             >Most Active</Typography>
-            <Typography>Click to scan</Typography>
+            <Typography>{this.props.disabled ? "Populating..." : "Click to scan"}</Typography>
 
             <List dense>
               {this.state.mostActive.map((item, idx) =>
