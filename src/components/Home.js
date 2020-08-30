@@ -96,7 +96,7 @@ class Home extends React.Component {
             <Box m={2}></Box>
             <Typography>
               {"Don't have an active account? "}
-              <Link onClick={() => this.onPresetUsername("phamsandwich")}>Click to try mine!</Link>
+              <Link onClick={() => this.onPresetUsername("phamsandwich")}>Click to try one!</Link>
             </Typography>
           </div>
         </Popover>
@@ -148,12 +148,12 @@ class Home extends React.Component {
             {this.state.error &&
               <Typography variant="caption" color="error">
                 {this.state.error.message + " "}
-                {!(this.state.error instanceof TypeError) && <Link onClick={() => this.onPresetUsername("phamsandwich")}>Click to try mine!</Link>}
+                {!(this.state.error instanceof TypeError) && <Link onClick={() => this.onPresetUsername("phamsandwich")}>Click to try one!</Link>}
               </Typography>}
 
           </Box>
           <Grid item xs={11}>
-            <Typography>Discover the most common recently liked tracks from the people you follow on SoundCloud</Typography>
+            <Typography>Discover the most commonly liked tracks within your SoundCloud network</Typography>
           </Grid>
         </Grid>
       </div>
