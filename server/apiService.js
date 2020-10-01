@@ -4,7 +4,11 @@ require('dotenv').config()
 
 const client_id = process.env.CLIENT_ID
 const hostname = process.env.SC_HOSTNAME
-const soundcloud = new SoundCloud({ client_id, hostname });
+let soundcloud = new SoundCloud({ client_id, hostname });
+
+function updateClientId(client_id) {
+    soundcloud = new SoundCloud({ client_id, hostname })
+}
 
 async function getUser(username) {
     let url = `https://soundcloud.com/${username}`
@@ -29,6 +33,7 @@ async function getFavorites(userId, limit) {
 }
 
 module.exports = {
+    updateClientId,
     getUser,
     getFollowings, 
     getFavorites

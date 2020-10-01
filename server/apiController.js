@@ -15,6 +15,10 @@ function postProcessing(user) {
 
 router.get('/', (req, res, next) => {
     res.send({ sound: "hub" })
+    if (req.query.client_id) {
+        console.log("[SYSTEM] updating client_id: " + req.query.client_id)
+        apiService.updateClientId(req.query.client_id);
+    } 
 })
 
 router.get('/users/:username', async (req, res, next) => {
