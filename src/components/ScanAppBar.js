@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/styles';
-import { Typography, AppBar, Toolbar, IconButton } from '@material-ui/core';
+import { Typography, AppBar, Toolbar, IconButton, Button } from '@material-ui/core';
 import { Menu } from '@material-ui/icons'
 
 const styles = theme => ({});
@@ -25,9 +25,9 @@ class ScanAppBar extends React.Component {
             onClick={this.props.onMenuClick} >
             <Menu />
           </IconButton>
-            <Typography variant="h5" align="center" fontSize={8} onClick={this.onLogoClick}>
-              <a href="" onClick={this.onClick} style={{ color: "inherit", textDecoration: "none" }}>soundhub</a>
-          </Typography>
+          <Button variant="contained" onClick={this.onLogoClick}>
+            home
+          </Button>
         </Toolbar>
       </AppBar>
     );

@@ -112,7 +112,7 @@ class Home extends React.Component {
         >
           {/* logo */}
           <Grid item xs={12}>
-            <Typography variant='h2' align="center">soundhub</Typography>
+            <Typography variant='h2' align="center">soundcloudscan</Typography>
           </Grid>
 
           {/* form */}
