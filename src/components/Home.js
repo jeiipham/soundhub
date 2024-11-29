@@ -157,7 +157,14 @@ class Home extends React.Component {
           </Grid>
           <Button
             href={`http://${window.location.hostname}:3001/api`}
+            variant='contained'
             color= 'primary'
+            style={{
+              size: 'medium',
+              position: 'fixed',
+              bottom: '5px',
+              right: '5px'
+            }}
           >
             Admin Panel
           </Button>
