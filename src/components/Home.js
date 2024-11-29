@@ -1,7 +1,7 @@
-import React from 'react';
-import { withStyles } from '@material-ui/styles';
-import { AppBar, Box, Grid, TextField, Typography, Button, Toolbar, InputAdornment, IconButton, Popover, Paper, Link } from '@material-ui/core';
+import { AppBar, Box, Button, Grid, IconButton, InputAdornment, Link, Paper, Popover, TextField, Toolbar, Typography } from '@material-ui/core';
 import { HelpOutline, Search } from '@material-ui/icons';
+import { withStyles } from '@material-ui/styles';
+import React from 'react';
 const api = require('../services/api')
 
 const styles = theme => ({
@@ -155,6 +155,8 @@ class Home extends React.Component {
           <Grid item xs={11}>
             <Typography>Discover the most common recently liked tracks from the people you follow on SoundCloud</Typography>
           </Grid>
+
+           {/* TOOD: add admin button to home page that links to <HOSTNAME>:3001/api*/}
         </Grid>
       </div>
     );
