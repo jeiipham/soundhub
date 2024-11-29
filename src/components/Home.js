@@ -155,7 +155,6 @@ class Home extends React.Component {
           <Grid item xs={11}>
             <Typography>Discover the most commonly liked tracks within your SoundCloud network</Typography>
           </Grid>
-          {/* TODO: add admin button to home page that links to <HOSTNAME>:3001/api*/}
           <Button
             href={`http://${window.location.hostname}:3001/api`}
             color= 'primary'
