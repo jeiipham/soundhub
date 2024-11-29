@@ -1,7 +1,7 @@
-import React from 'react';
-import { withStyles } from '@material-ui/styles';
-import { AppBar, Box, Grid, TextField, Typography, Button, Toolbar, InputAdornment, IconButton, Popover, Paper, Link } from '@material-ui/core';
+import { AppBar, Box, Button, Grid, IconButton, InputAdornment, Link, Paper, Popover, TextField, Toolbar, Typography } from '@material-ui/core';
 import { HelpOutline, Search } from '@material-ui/icons';
+import { withStyles } from '@material-ui/styles';
+import React from 'react';
 const api = require('../services/api')
 
 const styles = theme => ({
@@ -96,7 +96,7 @@ class Home extends React.Component {
             <Box m={2}></Box>
             <Typography>
               {"Don't have an active account? "}
-              <Link onClick={() => this.onPresetUsername("phamsandwich")}>Click to try one!</Link>
+              <Link onClick={() => this.onPresetUsername("jefpha")}>Click to try one!</Link>
             </Typography>
           </div>
         </Popover>
@@ -148,13 +148,16 @@ class Home extends React.Component {
             {this.state.error &&
               <Typography variant="caption" color="error">
                 {this.state.error.message + " "}
-                {!(this.state.error instanceof TypeError) && <Link onClick={() => this.onPresetUsername("phamsandwich")}>Click to try one!</Link>}
+                {!(this.state.error instanceof TypeError) && <Link onClick={() => this.onPresetUsername("jefpha")}>Click to try one!</Link>}
               </Typography>}
 
           </Box>
           <Grid item xs={11}>
             <Typography>Discover the most commonly liked tracks within your SoundCloud network</Typography>
           </Grid>
+
+          {/* TOOD: add admin button to home page that links to <HOSTNAME>:3001/api*/}
+
         </Grid>
       </div>
     );
