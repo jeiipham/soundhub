@@ -1,5 +1,5 @@
-import { AppBar, Box, Button, Grid, IconButton, InputAdornment, Link, Paper, Popover, TextField, Toolbar, Typography } from '@material-ui/core';
-import { HelpOutline, Search } from '@material-ui/icons';
+import { AppBar, Box, Button, Grid, IconButton, InputAdornment, Link, Paper, Popover, TextField, Toolbar, Typography, Modal } from '@material-ui/core';
+import { HelpOutline, Search, Build } from '@material-ui/icons';
 import { withStyles } from '@material-ui/styles';
 import React from 'react';
 const api = require('../services/api')
@@ -25,8 +25,10 @@ class Home extends React.Component {
 
   state = {
     username: '',
+    clientId: '',
     anchorEl: null,
-    error: null
+    error: null,
+    anchorElADMIN: null
   };
 
   onChange = (event) => {
@@ -53,6 +55,26 @@ class Home extends React.Component {
     this.setState({ anchorEl: null })
   }
 
+  onAdminClick = (event) => {
+    this.setState({ anchorElADMIN: event.currentTarget });
+  }
+
+  onAdminChange = (event) => {
+    this.setState({clientId: event.target.value})
+  }
+
+  onSubmitID = async (event) => {
+    event.preventDefault()
+    let hostname = window.location.hostname;
+    let clientId = this.state.clientId;
+    fetch(`http://${hostname}:3001/api?client_id=${clientId}`)
+    .catch((error) => console.error('Error:', error));
+    this.onAdminClose()
+  }
+  onAdminClose = () => {
+    this.setState({ anchorElADMIN: null })
+  }
+
   onPresetUsername = (username) => {
     this.setState({ username, anchorEl: null })
   }
@@ -60,6 +82,7 @@ class Home extends React.Component {
   render() {
     const { classes } = this.props;
     const open = Boolean(this.state.anchorEl);
+    const open2 = Boolean(this.state.anchorElADMIN);
 
     return (
       <div className={classes.root} >
@@ -69,6 +92,44 @@ class Home extends React.Component {
             <Button disabled>Github</Button> */}
           </Toolbar>
         </AppBar>
+              
+        <Modal
+          open={open2}
+          onClose={this.onAdminClose}
+          anchorElADMIN={this.state.anchorElADMIN}
+        >
+          <Box style={{
+            background: 'hsl(0, 0%, 15%)',
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            padding: '20px',
+            width: 500,
+            height: 200, }}>
+            <Typography variant='h5' align='center'>Configuration</Typography>
+            <Box m={2}></Box>
+            <Button onClick={this.onAdminClose} variant = 'text' style={{
+              position: 'absolute',
+              top: '0px',
+              right: '0px',
+              borderRadius: '0px',
+            }}
+            >X</Button>
+            <Grid component="form" onSubmit={this.onSubmitID}>
+            <TextField fullWidth
+                label="SoundCloud Client ID" variant="outlined"
+                value={this.state.clientId}
+                onChange={this.onAdminChange}
+            />
+              <Box m={2}></Box>
+            <Grid align='center' m={2}>
+              <Button type="submit" variant="contained"
+              color="primary" style={{ height: "100%" }}>ENTER</Button>
+              </Grid>
+            </Grid>
+          </Box>
+        </Modal>
 
         <Popover
           open={open}
@@ -156,17 +217,17 @@ class Home extends React.Component {
             <Typography>Discover the most commonly liked tracks within your SoundCloud network</Typography>
           </Grid>
           <Button
-            href={`http://${window.location.hostname}:3001/api`}
+            onClick={this.onAdminClick}
+            // href={`http://${window.location.hostname}:3001/api`}
             variant='contained'
             color= 'primary'
             style={{
-              size: 'medium',
               position: 'fixed',
               bottom: '5px',
               right: '5px'
             }}
           >
-            Admin Panel
+            <Build />
           </Button>
         </Grid>
       </div>
