@@ -1,5 +1,5 @@
-import { AppBar, Box, Button, Grid, IconButton, InputAdornment, Link, Paper, Popover, TextField, Toolbar, Typography, Modal } from '@material-ui/core';
-import { HelpOutline, Search, Build } from '@material-ui/icons';
+import { AppBar, Box, Button, Grid, IconButton, InputAdornment, Link, Modal, Paper, Popover, TextField, Toolbar, Typography } from '@material-ui/core';
+import { Build, HelpOutline, Search } from '@material-ui/icons';
 import { withStyles } from '@material-ui/styles';
 import React from 'react';
 const api = require('../services/api')
@@ -25,10 +25,12 @@ class Home extends React.Component {
 
   state = {
     username: '',
-    clientId: '',
     anchorEl: null,
     error: null,
-    anchorElADMIN: null
+    anchorElADMIN: null,
+    clientId: '',
+    password: '',
+    passed: true
   };
 
   onChange = (event) => {
@@ -63,16 +65,26 @@ class Home extends React.Component {
     this.setState({clientId: event.target.value})
   }
 
+  onPassChange = (event) => {
+    this.setState({password: event.target.value})
+  }
+
   onSubmitID = async (event) => {
     event.preventDefault()
     let hostname = window.location.hostname;
     let clientId = this.state.clientId;
-    fetch(`http://${hostname}:3001/api?client_id=${clientId}`)
-    .catch((error) => console.error('Error:', error));
-    this.onAdminClose()
+    let pass = this.state.password;
+    /*TODO more secure */
+    if(pass === '6744') {
+      fetch(`http://${hostname}:3001/api?client_id=${clientId}`)
+      .catch((error) => console.error('Error:', error));
+      this.onAdminClose()
+    } else {
+        this.setState({passed: false})
+    }
   }
   onAdminClose = () => {
-    this.setState({ anchorElADMIN: null })
+    this.setState({ anchorElADMIN: null, passed: true, password: '', clientId: '' })
   }
 
   onPresetUsername = (username) => {
@@ -106,7 +118,7 @@ class Home extends React.Component {
             transform: 'translate(-50%, -50%)',
             padding: '20px',
             width: 500,
-            height: 200, }}>
+            height: 300, }}>
             <Typography variant='h5' align='center'>Configuration</Typography>
             <Box m={2}></Box>
             <Button onClick={this.onAdminClose} variant = 'text' style={{
@@ -118,11 +130,21 @@ class Home extends React.Component {
             >X</Button>
             <Grid component="form" onSubmit={this.onSubmitID}>
             <TextField fullWidth
+                label="Password" variant="outlined"
+                value={this.state.password}
+                onChange={this.onPassChange}
+            />
+            <Box m={2}></Box>
+            <TextField fullWidth
                 label="SoundCloud Client ID" variant="outlined"
                 value={this.state.clientId}
                 onChange={this.onAdminChange}
             />
               <Box m={2}></Box>
+              {!this.state.passed &&
+              <Typography variant="caption" color="error">
+                Incorrect password.
+              </Typography>}
             <Grid align='center' m={2}>
               <Button type="submit" variant="contained"
               color="primary" style={{ height: "100%" }}>ENTER</Button>
@@ -218,7 +240,6 @@ class Home extends React.Component {
           </Grid>
           <Button
             onClick={this.onAdminClick}
-            // href={`http://${window.location.hostname}:3001/api`}
             variant='contained'
             color= 'primary'
             style={{
