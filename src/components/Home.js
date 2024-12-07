@@ -38,7 +38,7 @@ class Home extends React.Component {
   }
 
   onClick = async (event) => {
-    event.preventDefault()
+    event.preventDefault();
     let username = this.state.username.includes(".com/") ? 
       this.state.username.split(".com/")[1] : this.state.username;
     api.getUserAsync(username)
@@ -74,13 +74,20 @@ class Home extends React.Component {
     let hostname = window.location.hostname;
     let clientId = this.state.clientId;
     let pass = this.state.password;
-    /*TODO more secure */
-    if(pass === '6744') {
-      fetch(`http://${hostname}:3001/api?client_id=${clientId}`)
-      .catch((error) => console.error('Error:', error));
-      this.onAdminClose()
-    } else {
-        this.setState({passed: false})
+    try {
+      const response = await fetch(`http://${hostname}:3001/api/validate-password/${pass}/${clientId}`)
+      const result = await response.json();
+      if (result.success) {
+        fetch(`http://${hostname}:3001/api?client_id=${clientId}`)
+        .catch(error => {
+          console.error('Error:', error);
+        })
+        this.onAdminClose();
+      } else {
+          this.setState({ passed : false });
+        }
+    } catch (error) {
+      console.error('Error:', error);
     }
   }
   onAdminClose = () => {
@@ -238,18 +245,20 @@ class Home extends React.Component {
           <Grid item xs={11}>
             <Typography>Discover the most commonly liked tracks within your SoundCloud network</Typography>
           </Grid>
-          <Button
-            onClick={this.onAdminClick}
-            variant='contained'
-            color= 'primary'
-            style={{
-              position: 'fixed',
-              bottom: '5px',
-              right: '5px'
-            }}
-          >
-            <Build />
-          </Button>
+          <Grid>
+            <Button
+              onClick={this.onAdminClick}
+              variant='contained'
+              color= 'primary'
+              style={{
+                position: 'fixed',
+                bottom: '5px',
+                right: '5px'
+              }}
+            >
+              <Build />
+            </Button>
+          </Grid>
         </Grid>
       </div>
     );
