@@ -1,5 +1,7 @@
 const router = require('express').Router()
 const apiService = require('./apiService')
+//TODO add to env: ADMIN_PASSWORD = 6744
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '6744';
 
 // session variables 
 let scanCount = 0
@@ -55,5 +57,14 @@ router.get('/favorites/:userId', async (req, res, next) => {
     }
 })
 
+router.get('/validate-password/:pass/:clientId', (req, res, next) => {
+    try {
+        // console.log(`Password ${req.params.pass} for clientId: ${req.params.clientId}`);
+        res.send({ success: req.params.pass === ADMIN_PASSWORD });
+    } catch (error) {
+        console.error(error)
+        next(error)
+    }
+})
 
-module.exports = router 
+module.exports = router;
