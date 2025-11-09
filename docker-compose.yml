@@ -1,16 +1,18 @@
 version: "2.0"
 services:
   client:
+    platform: linux/amd64
     build: 
       context: .
       dockerfile: client.Dockerfile
-    image: jeiipham/repo:soundhub-client
+    image: jeiiphamdocker/soundhub-client
     ports: 
       - "80:80"
   server:
+    platform: linux/amd64
     build: 
       context: .
       dockerfile: server.Dockerfile
-    image: jeiipham/repo:soundhub-server
+    image: jeiiphamdocker/soundhub-server
     ports: 
       - "3001:3001"

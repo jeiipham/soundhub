@@ -4,6 +4,7 @@ export function getUserAsync(username) {
     return fetch(`${serverHost}/api/users/${username}`)
         .then(res => {
             if (res.status === 404) throw new Error("Username doesn't exist.")
+            else if (res.status === 401) throw new Error("Invalid Client ID: " + res.statusText + " " + res.status)
             return res.json()
         })
 }
